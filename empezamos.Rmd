@@ -1,0 +1,145 @@
+---
+title: "Estadística con R"
+author:
+- Mariano Rico
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+Esto es un cuaderno [R Markdown](http://rmarkdown.rstudio.com). Cuando ejecutas código dentro del cuaderno, el resultado (números, gráficas, tablas, etc.) aparece tras el código. 
+
+## Números aleatorios y semillas
+Vamos a generar números aleatorios. Usaremos la función `runif` (r de "random" y unif de uniforme), porque usa la distribución uniforme (valores equiprobables).
+```{r echo==TRUE, message=TRUE}
+runif(6, 0, 1)
+```
+
+Este comando saca 6 valores entre 0 y 1.
+Si quiero que la próxima vez que ejecute un programa, genere los mismos valores, tendré que asignar una semilla con `set.seed(entero)`.
+```{r echo=TRUE, message=TRUE}
+set.seed(666)
+runif(6, 0, 1)
+runif(6, 0, 1)
+```
+```{r echo=TRUE, message=TRUE}
+set.seed(666)
+runif(6, 0, 1)
+runif(6, 0, 1)
+```
+Como hemos vuelto a poner la misma semilla, la secuecia de números aleatorios vuelve a ser la misma de antes.
+
+## Generando números de una normal
+Para generar números que siguen una distribución normal, usaremos `rnorm`:
+```{r echo=TRUE, message=TRUE}
+rnorm(6, 0, 1)
+```
+Esto ha generado 6 números aleatorios de una distribución normal de media 0 y sd (standard deviation, desviación estándar) 1.
+
+## El caso del precio del zumo de naranja en Madrid
+Generamos 6 precios a partir de una distribución normal de media 2 y sd 1.
+```{r echo=TRUE, message=TRUE}
+rnorm(6, 2, 1)
+```
+Podemos calcular el valor medio (la media) de una "muestra" de 6 elementos como esos con
+```{r echo=TRUE, message=TRUE}
+mean(rnorm(6, 2, 1))
+```
+Podemos hacer tantas muestras de 6 elementos como queramos con `replicate`. 
+```{r echo=TRUE, message=TRUE}
+replicate(100, mean(rnorm(6, 2, 1)))
+```
+En este caso hemos tomado 100 muestras de 6 bares elegidos aleatoriamente (de una población infinita), y de cada muestra mostramos su media. Observa que hemos obtenido un vector de valores. 
+
+Cualquier vector de valores se puede mostrar como un histograma, con la función `hist`.
+```{r echo=TRUE, message=TRUE}
+hist(replicate(100, mean(rnorm(6, 2, 1))), main = "histograma de 100 medias")
+```
+
+Pero también podemos sacar su densidad de probabilidad con el parámetro `freq = FALSE` en la función `hist`.
+```{r echo=TRUE, message=TRUE}
+medias <- replicate(100, mean(rnorm(6, 2, 1)))
+hist(medias, 
+     freq = FALSE, 
+     main = "Densidad de probabilidad de 100 medias de 6 elementos")
+```
+
+
+La desviación típica es:
+```{r echo=TRUE, message=TRUE}
+sd(medias)
+```
+Lo podemos redondear a dos decimales con: 
+```{r echo=TRUE, message=TRUE}
+round(sd(medias), digits = 2)
+```
+
+
+Podemos ver cómo converge la media de las muestras usando la función `cummean` (cum de "cummulative" (acumulativo) y mean de "medias"). Esta función no está en el "R base", sino en la librería `dplyr`. Se entiende bien con un ejemplo sencillo:
+```{r echo=TRUE, message=FALSE}
+library(dplyr)
+x <- c(1, 3, 5, 2, 2)
+cummean(x)
+```
+**Nota**: si no quieres usar la función `cummean` puedes usar `cumsum` (la suma acumulada), pero tienes que dividir cada valor por la posición en el vector.
+```{r echo=TRUE, message=FALSE}
+x <- c(1, 3, 5, 2, 2)
+cumsum(x)/1:length(x)
+```
+
+La función  `cummean` devuelve un vector del mismo tamaño, en el que cada elemento es la media de los anteriores. Es, por tanto, la media acumulada.
+En nuestro caso podemos dibujar en una gráfica esa media acumulada de forma sencilla: 
+```{r echo=TRUE, message=TRUE}
+library(dplyr)
+set.seed(335)
+mediamuestral <- cummean(replicate(100, mean(rnorm(6, 2, 1))))
+plot(mediamuestral)
+abline(h=2, col="red")
+text(80, 1.8, "Converge a la media (2.0)")
+```
+
+Esto es resultado de la ley de los grandes números.
+
+Podemos ver el efecto de aumentar el número de elementos de cada muestra usando 30 elementos en lugar de los 6 de antes
+```{r echo=TRUE, message=TRUE}
+set.seed(335)
+mediamuestral <-replicate(100, mean(rnorm(30, 2, 1)))
+hist(mediamuestral, 
+     freq = FALSE, 
+     main = paste('Densidad de probabilidad de 100 medias de 30 elementos\n',
+                  '(sd=', round(sd(mediamuestral), digits=2), ')'
+                  ),
+     xlab = "Precio del zumo en Madrid"
+    )
+```
+
+Observa que el rango sobre el que se muestra la gráfica (sd=0.21) es más estrecho que antes (sd=0.44). Este es el resultado del teorema central del límite. Bueno, y que la curva es una normal, sea cual sea la distribución de la población que se está muestrando.
+
+## El monstruo de Cauchy
+Si usamos la distribución de Cauchy, tendremos "desastres" que hacen que la media muestral no converja.
+```{r echo=TRUE, message=TRUE}
+library(dplyr)
+set.seed(328)
+mediamuestral <- cummean(replicate(100, mean(rcauchy(6, location = 2, scale = 1))))
+plot(mediamuestral)
+```
+
+
+
+
+Como curiosidad, la densidad de la media muestral anterior (población con distribución de Cauchy con location = 2 y scale = 1) es así: 
+
+```{r echo=TRUE, message=TRUE}
+set.seed(335)
+mediamuestral <-replicate(100, mean(rcauchy(30, 2, 1)))
+hist(mediamuestral, 
+     freq = FALSE, 
+     main = paste('Densidad de probabilidad de 100 medias de 30 elementos\n',
+                  '(sd=', round(sd(mediamuestral), digits=2), ')'
+                  ),
+      xlab = "Precio del zumo en Madrid (si fuese Cauchy)"
+    )
+```
+
