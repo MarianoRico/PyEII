@@ -1,0 +1,14 @@
+---
+title: "Introduccióna R en 60 minutos"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+Asumimos que ya conoces [CRAN](https://cran.r-project.org/) y sabes cómo instalar R, la consola de comandos (no confundir con RStudio, una herramienta que aprovecha un R ya instalado).
+También asumimos que la versión de R es superior a la 4.0 (es la fecha de escritura de este documento la última versión es la 4.0.4).
+
+# Vectores
+
+R es un lenguaje orientado a vectores. La mayoría de funciones aceptan que sus argumentos sean vectores. Esto tiene la ventaja de que estructuras que requieren bucles (como `for`, `do/while`) se convierten en R en una única llamada a una función.
+R tiene otras ventajas frente a lenguajes como C, R o Java, como: una comunidad enorme que genera librerías (*paquetes* en jerga R) de alta calidad, puede usar librerías escritas en otros lenguales (Fortran, C++, etc.), puede usar todos los procesadores de tu ordenador, usar clusters de ordenadores...  y, sobretodo, mucha flexibilidad a la hora de escribir código: puedes usar programación orientada a objetos, programaciçión funcional, incluso puedes usar bucles tradicionales.
