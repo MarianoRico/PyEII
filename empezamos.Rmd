@@ -2,7 +2,7 @@
 title: "Estadística con R"
 author:
 - Mariano Rico
-date: "`r format(Sys.time(), '%d %B %Y')`"
+date: "`r format(Sys.time(), '%d %m %Y')`"
 output:
   pdf_document: default
   html_document:

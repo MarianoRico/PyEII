@@ -1,14 +1,37 @@
 ---
 title: "Introduccióna R en 60 minutos"
+subtitle: "(a ver cómo sale)"
+author:
+- Mariano Rico (mariano.rico@upm.es)
+date: "`r format(Sys.time(), 'Documento creado el %d/%m/%Y')`"
+linkcolor: red 
+urlcolor: blue
+citecolor: green
+header-includes:
+    - \renewcommand{\contentsname}{Tabla de contenidos}
 output:
-  pdf_document: default
-  html_notebook: default
+  html_document:
+    df_print: paged
+    toc: true              # incluir tabla de contenido
+    toc_depth: 3           # por defecto, para html es hasta nivel 3
+    number_sections: false # las secciones van numeradas (y serán numeradas en la toc)
+    toc_float: yes         #Float the table of contents to the lef of the main content (solo para html). Queda muy chulo :-)
+                           # Más detalles en https://rstudio.com/wp-content/uploads/2016/03/rmarkdown-cheatsheet-2.0.pdf
+  pdf_document: 
+    toc: true              # incluir tabla de contenido
+    toc_depth: 2           # por defecto, para pdf es hasta nivel 2
+    number_sections: true  # las secciones van numeradas (y serán numeradas en la toc)
 ---
 
 Asumimos que ya conoces [CRAN](https://cran.r-project.org/) y sabes cómo instalar R, la consola de comandos (no confundir con RStudio, una herramienta que aprovecha un R ya instalado).
-También asumimos que la versión de R es superior a la 4.0 (es la fecha de escritura de este documento la última versión es la 4.0.4).
+También asumimos que la versión de R es superior a la 4.0 (en la fecha de escritura de este documento la última versión es la 4.0.4).
 
 # Vectores
 
 R es un lenguaje orientado a vectores. La mayoría de funciones aceptan que sus argumentos sean vectores. Esto tiene la ventaja de que estructuras que requieren bucles (como `for`, `do/while`) se convierten en R en una única llamada a una función.
-R tiene otras ventajas frente a lenguajes como C, R o Java, como: una comunidad enorme que genera librerías (*paquetes* en jerga R) de alta calidad, puede usar librerías escritas en otros lenguales (Fortran, C++, etc.), puede usar todos los procesadores de tu ordenador, usar clusters de ordenadores...  y, sobretodo, mucha flexibilidad a la hora de escribir código: puedes usar programación orientada a objetos, programaciçión funcional, incluso puedes usar bucles tradicionales.
+R tiene otras ventajas frente a lenguajes como C, R o Java, como: una comunidad enorme que genera librerías (*paquetes* en jerga R) de alta calidad, puede usar librerías escritas en otros lenguales (Fortran, C++, etc.), puede usar todos los procesadores de tu ordenador, usar clusters de ordenadores...  y, sobretodo, mucha flexibilidad a la hora de escribir código: puedes usar programación orientada a objetos, programación funcional, incluso puedes usar bucles tradicionales.
+
+# Data frames
+
+# Leyendo ficheros
+
