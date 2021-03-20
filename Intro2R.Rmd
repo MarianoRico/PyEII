@@ -1,5 +1,7 @@
 ---
-title: "Introduccióna R en 60 minutos"
+title: |
+  ![](DIA_logo.png){width=1in}  
+  Introduccióna R en 60 minutos
 subtitle: "(a ver cómo sale)"
 author:
 - Mariano Rico (mariano.rico@upm.es)
@@ -10,28 +12,603 @@ citecolor: green
 header-includes:
     - \renewcommand{\contentsname}{Tabla de contenidos}
 output:
+  pdf_document: 
+    df_print: kable        # tablas bonitas
+    toc: true              # incluir tabla de contenido
+    toc_depth: 2           # por defecto, para pdf es hasta nivel 2
+    number_sections: true  # las secciones van numeradas (y serán numeradas en la toc)
   html_document:
-    df_print: paged
+    df_print: paged        # por defecto ya son bonitas
     toc: true              # incluir tabla de contenido
     toc_depth: 3           # por defecto, para html es hasta nivel 3
     number_sections: false # las secciones van numeradas (y serán numeradas en la toc)
     toc_float: yes         #Float the table of contents to the lef of the main content (solo para html). Queda muy chulo :-)
                            # Más detalles en https://rstudio.com/wp-content/uploads/2016/03/rmarkdown-cheatsheet-2.0.pdf
-  pdf_document: 
-    toc: true              # incluir tabla de contenido
-    toc_depth: 2           # por defecto, para pdf es hasta nivel 2
-    number_sections: true  # las secciones van numeradas (y serán numeradas en la toc)
 ---
+
+# Requisitos para empezar
 
 Asumimos que ya conoces [CRAN](https://cran.r-project.org/) y sabes cómo instalar R, la consola de comandos (no confundir con RStudio, una herramienta que aprovecha un R ya instalado).
 También asumimos que la versión de R es superior a la 4.0 (en la fecha de escritura de este documento la última versión es la 4.0.4).
 
+# Introducción
+R es un leguaje "interpretado". Esto quiere decir que no hay un compilador que genere el código máquina del ejecutable. Por este motivo, no se dice "un programa R" sino "un script R".
+
+Cuando se ejecuta un script R, se "compila una línea" del script y se ejecuta, y así para todo el script. Esto quiere decir que podemos tener un error sintáctico (un compilador detectaría el error) en el script y no lo detectamos hasta que se ejecuta la línea del error. Para detectar esos errores sintácticos en tiempo de edición (antes de ejecutarlo) hay entornos de desarrollo como RStudio. 
+
+R tiene varias ventajas frente a lenguajes como C o Java, como: una comunidad enorme que genera librerías (*paquetes* en jerga R) de alta calidad, puede usar librerías escritas en otros lenguales (Fortran, C++, etc.), puede usar todos los procesadores de tu ordenador, usar clusters de ordenadores...  y, sobretodo, permite mucha flexibilidad a la hora de escribir código: puedes usar programación orientada a objetos, programación funcional, incluso puedes usar bucles tradicionales. En definitiva, la flexibilidad permite muchos estilos de programación, y la misma funcionalidad de puede obtener de diversas maneras, adaptándose a la manera de programar de cada usuario, o a su nivel de conocimientos. Normalmente, los usuarios más avanzados usan paquetes avanzados y en pocas líneas de código logran una gran funcionalidad.
+
+
+# Variables y tipos básicos
+
+En R tienes los siguientes tipos básicos:
+
+* enteros
+* cadenas
+* flotantes
+* booleanos
+
+La asignación de la variable se puede hacer usando `=` o `<-`. Por ejemplo:
+```{r echo=TRUE, message=TRUE}
+a <- 1
+b <- 0.5
+c <- "hola"
+d <- TRUE
+```
+
+No hay que declarar los tipos de las variables, son dinámicos. En este caso usaremos la variable `a` para que guarde distintos tipos de datos, sobreescribiendo el valor anterior. La función `class(variable)` nos indicará el tipo de la variable.
+
+```{r echo=TRUE, message=TRUE}
+a <- 1
+a
+class(a)
+a <- 0.5
+a
+class(a)
+a <- "hola"
+a
+class(a)
+a <- TRUE
+a
+class(a)
+```
+
+## Tipos derivados
+Se pueden definir otros tipos. Por ejemplo, en el paquete base se definen los números complejos:
+```{r echo=TRUE, message=TRUE}
+a <- 3 + 2i
+class(a)
+```
+
+Los operadores reconocen los tipos y actúan en consecuencia. 
+```{r echo=TRUE, message=TRUE}
+a <- 3 + 2i
+b <- 1 - 2i
+dotimg <- a*b
+dotimg
+class(dotimg)
+```
+
+Nota: recuerda que $(a,b)\cdot(c,d) =  (ac-bd, ad+bc)$
+
+## Constantes{#constantes}
+
+También se conocen las constantes $\pi$ (como variable `pi`) y $e$ (como resultado de `exp(1)`).
+```{r echo=TRUE, message=TRUE}
+cat(paste("Esta es pi=", pi))
+cat(paste("Esta es e=", exp(1)))
+```
+
+La "ecuación más bella", la [identidad de Euler](https://es.wikipedia.org/wiki/Identidad_de_Euler) ($e^{-i\pi}+1 = 0$), en R sería:
+```{r echo=TRUE, message=TRUE}
+bella <- exp(-1 * (0 + 1i) * pi) + 1
+bella #Observa que es un número imaginario
+Re(bella)#Esta es su parte real
+Im(bella)#Esta es su parte imaginaria
+```
+
+(que "viene siendo" $\approx$ 0).
+
+## Números flotantes
+
+Un número flotante es `a <- 1/3` (0.3333...). Los números flotantes en notación científica usan la letra `e`, pero OJO, no debe confundirse con exp(1) (el número $e$ descrito en [la sección de las constantes](#constantes)). 
+Por ejemplo, 140 millones ($1.4 \cdot 10^{8}$) se escribe en notación científica `1.4e+8`.
+```{r echo=TRUE, message=TRUE}
+cat(paste("140 millones=", 1.4e+8))
+cat(paste("140 millones (como entero)=", as.integer(1.4e+8)))
+```
+
+En R todos los  números (salvo los complejos) son de tipo `numeric`. 
+```{r echo=TRUE, message=TRUE}
+class(1.4e+8)
+class(23)
+class(1/3)
+class(pi)
+```
+
+Por este motivo, podemos hacer un vector de números que tenga enteros, fracciones, flotantes o constantes.
+```{r echo=TRUE, message=TRUE}
+c(1, 1/3, sqrt(2), 1.3, pi)
+```
+
+
+## Cadenas
+```{r echo=TRUE, message=TRUE}
+cadenaUnica <- "hola"
+nchar(cadenaUnica)#Número de caracteres de la cadena
+```
+
+El tipo de las cadenas es `character`
+```{r echo=TRUE, message=TRUE}
+class("hola")
+```
+
+Las cadenas pueden suuar comillas dobles o comillas simples
+```{r echo=TRUE, message=TRUE}
+cadena1 <- "hola"
+cadena2 <- 'hola'
+cadena1 == cadena2
+```
+
+
+### Operaciones con cadenas
+Unimos cadenas con `paste()`. Por ejemplo:
+```{r echo=TRUE, message=TRUE}
+paste("Hola", "cara", "cola")
+```
+
+Se pueden transformar las cadenas (cambiar su contenido) con funciones como `toupper` (convertir a mayúsculas) o `tolower` (convertir a minúsculas).
+```{r echo=TRUE, message=TRUE}
+toupper("Hola")
+tolower("NASA")
+```
+
+
+
+## Otros tipos
+
+R define en su paquete base otros tipos, tales como matrices, tablas de contingencia, data frames, fechas, y un largo etcétera. [Aquí](https://en.wikipedia.org/w/index.php?title=R_(programming_language)&section=17) puedes ver un ejemplo que usa matrices, números enteros y bucles para crear una animación del conjunto de Mandelbrot en 16 líneas de código R. 
+
+## Operadores y precedencia
+Los operadores son intuitivos y no se te harán extraños si conoces  C o Java, pero en R hay algunos más, algunos muy sofisticados (como el operador `%any%`, que permite crear nuevos operadores). Tienes una descripción completa [aquí](https://stat.ethz.ch/R-manual/R-devel/library/base/html/Syntax.html).
+
 # Vectores
 
-R es un lenguaje orientado a vectores. La mayoría de funciones aceptan que sus argumentos sean vectores. Esto tiene la ventaja de que estructuras que requieren bucles (como `for`, `do/while`) se convierten en R en una única llamada a una función.
-R tiene otras ventajas frente a lenguajes como C, R o Java, como: una comunidad enorme que genera librerías (*paquetes* en jerga R) de alta calidad, puede usar librerías escritas en otros lenguales (Fortran, C++, etc.), puede usar todos los procesadores de tu ordenador, usar clusters de ordenadores...  y, sobretodo, mucha flexibilidad a la hora de escribir código: puedes usar programación orientada a objetos, programación funcional, incluso puedes usar bucles tradicionales.
+R es un lenguaje orientado a vectores. La mayoría de funciones aceptan que sus argumentos sean vectores (cuando se pasa un único valor lo interpreta como un vector con un único elemento). Esto tiene la ventaja de que estructuras que requieren bucles (como `for`, `do/while`) se convierten en R en una única llamada a una función.
+
+Por ejemplo, si creamos dos vectores de enteros:
+
+
+```{r echo=TRUE, message=TRUE}
+a <- c(1, 3, 5, 7)
+b <- c(0, 2, 4, 6)
+```
+
+Podemos sumarlos o restarlos:
+
+```{r echo=TRUE, message=TRUE}
+a + b
+a - b
+```
+
+Podemos multiplicarlos o dividirlos:
+
+```{r echo=TRUE, message=TRUE}
+a * b
+b / a
+```
+
+Los vectores alojan elementos del mismo tipo. Si quieres alojar elementos de distintos tipos tienes que usar listas.
+
+Hay funciones para generar vectores. Por ejemplo, `seq` crea una secuencia de valores:
+```{r echo=TRUE, message=TRUE}
+seq(from=1, to=10, by=2)
+```
+
+
+
+## Funciones sobre vectores
+La función `length()`, aplicada a un vector, devuelve el número de elementos del vector.
+```{r echo=TRUE, message=TRUE}
+a <- c(1, 2, 3, 4)
+length(a)
+```
+
+
+La función `sum()`, aplicada a un vector, devuelve la suma los valores.
+```{r echo=TRUE, message=TRUE}
+a <- c(1, 2, 3, 4)
+sum(a)
+```
+
+Podemos calcular la media, la desviación típica, la cuasivarianza (también llamada varianza muestral):
+```{r echo=TRUE, message=TRUE}
+a <- c(1, 2, 3, 4)
+mean(a)
+sd(a)
+var(a)
+```
+
+Observa que `var()` calcula la cuasivarianza (divide por `n-1`), no la varianza (divide por `n`). Esto suele ser motivo de confusión, como en [este hilo](https://stats.stackexchange.com/questions/270757/built-in-var-function-in-r-computes-the-quasi-variance) de stackexchange en el que se indica que la librería numpy de Python usa `var()` para la varianza. En estos detalles se nota que R fue creado por expertos en estadística.
+
+Hay funciones que devuelven vectores, como `cumsum()` (suma acumulada). Veamos un ejemplo:
+```{r echo=TRUE, message=TRUE}
+a <- c(1, 2, 3, 4)
+#El primer elemento es el primer valor, el segundo es la suma de los dos primeros valores, etc.
+cumsum(a) 
+```
+
+## Acceso, modificacion y eliminación de los elementos de un vector
+
+Dado el vector de enteros siguiente:
+```{r echo=TRUE, message=TRUE}
+a <- c(5, 4, 3, 2)
+```
+
+__¡OJO!__ A diferencia de otros lenguajes, como C o Java, en el que el primer elemento es el 0, __en R el primer elemento es el 1__.
+
+Accedemos al primer elemento del vector con
+```{r echo=TRUE, message=TRUE}
+a[1]
+```
+
+Accedemos al último elemento del vector con
+```{r echo=TRUE, message=TRUE}
+a[length(a)]
+```
+
+Podemos acceder a varios elementos si, en lugar de un índice, indicamos un vector de índices.
+```{r echo=TRUE, message=TRUE}
+a[c(1,2)] #Valores de los elementos de los índices 1 y 2
+```
+
+En R hay un operador secuencia: `2:5` es equivalente a `c(2, 3, 4, 5)`, por lo que podemos hacer:
+```{r echo=TRUE, message=TRUE}
+a[2:4] #Valores de los elementos de los índices entre el 2 y el 4 (ambos incluidos)
+```
+### Acceso usando condiciones
+Se pueden obtener los elementos de un vector que cumplen cierta condición. Un ejemplo:
+```{r echo=TRUE, message=TRUE}
+a[a>3] #Valores de los elementos con valor mayor que 3
+```
+
+En R los operadores lógicos AND y OR se escriben con `&` y `|` respectivamente.
+```{r echo=TRUE, message=TRUE}
+a[a>=3 & a<=5] #Elementos con valor mayor o igual que 3 y menor o igual que 5
+```
+
+
+### Concatenación de vectores
+
+La función `append()` permite concatenar vectores (deber ser del mismto tipo, claro).
+```{r echo=TRUE, message=TRUE}
+vectorInicial <- c(5, 6, 7)
+vectorNuevosElementos <- c(8, 9)
+append(vectorInicial, vectorNuevosElementos)
+```
+
+### Si sigues pensando en bucles
+Si todavía te cuesta sacar los bucles de tu cabeza, puedes usar estructuras tradicionales. Un ejemplo: 
+```{r echo=TRUE, message=TRUE}
+n <- 5
+x <- vector(length=n)   #¡OJO! Creación dinámica de un vector
+for (i in 1:n){         #Bucle for
+    x[i] <- i 
+}
+x
+```
+
+
+### NULL, NA, NaN y otras lindezas
+Los datasets del mundo real no son perfectos. Con frecuencia faltan valores (NA, del inglés "Not Available" (no disponible)) o son nulos (NULL). Cuando operamos con ellos obtenemos `Inf` (infinito), por ejemplo si hacemos 3/0, o `-Inf` (-3/0). Si hacemos 0/0 obtenemos `NaN` (Not a Number, en castallano "indefinido").
+
+Para identificar estar lindezas en uestros datos, R proporciona funciones como `is.null(x)`, `is.na(x)`, `anyNA(x)`, `is.infinite(x)`, `is.nan(x)`.
+
+Por ejemplo, un vector vacío `c()` está a NULL. Por tanto: 
+```{r echo=TRUE, message=TRUE}
+is.null(c())
+```
+
+
+Podéis buscar estos "errores" en vuestros datos con operaciones como estas:
+```{r echo=TRUE, message=TRUE}
+datosEnBruto <- c(5, NA, 3, Inf)
+is.na(datosEnBruto) #Retorna un vector de booleanos. TRUE --> tienen NA
+```
+
+__¡¡OJO!!__ Los vectores pueden contener NA(s) pero no pueden tener NULL(s). Las listas sí pueden tener NA(s) y NULL(s). Vectores y listas pueden tener NaN(s), Inf(s) y -Inf(s).
+
+Para pasar de vector de booleanos a vector de índices usa `which()`. Continuando el ejemplo anterior:
+```{r echo=TRUE, message=TRUE}
+datosEnBruto <- c(5, NA, 3, Inf)
+which(is.na(datosEnBruto)) #Obtenemos los índices de los elementos que tienen NA
+```
+
+### Eliminado elementos
+Ahora que sabes los elementos "raros" de un vector de datos, quieres poder eleminarlos del vector. Un ejemplo:
+```{r echo=TRUE, message=TRUE}
+datosEnBruto <- c(5, NA, 3, Inf)
+toRemove <- which(is.na(datosEnBruto)) #Obtenemos los índices de los elementos que tienen NA
+datosEnBruto[-toRemove]  #Fíjate en el signo menos.
+```
+
+Observa que esto vale para eliminar __todos__ los NAs de un vector. Mira este ejemplo:
+```{r echo=TRUE, message=TRUE}
+datosEnBruto <- c(5, NA, 3, NA, 7, NA)
+toRemove <- which(is.na(datosEnBruto)) #Obtenemos los índices de los elementos que tienen NA
+datosEnBruto[-toRemove]  #Fíjate en el signo menos.
+```
+
+
+### Asignando elementos
+Si, en lugar de eliminar los NAs quieres reemplazarlos por ceros, puedes hacer esto (asignar un valor a los elementos que cumpen cierta condición lógica):
+```{r echo=TRUE, message=TRUE}
+datosEnBruto <- c(5, NA, 3, NA, 7, NA)
+datosEnBruto[is.na(datosEnBruto)] <- 0 #Asigna el valor 0 a los elementos que cumplen la condición
+datosLimpios <- datosEnBruto
+datosLimpios
+```
+
 
 # Data frames
+Un data frame (DF) es una "tabla de datos". Las columnas suelen tener nombre para poder referirnos a ellas por su nombre.
+
+En R podemos saber qué datasets tenemos disponibles (aparte de los que creemos nosotros) con el comando  `data(package = "nombre paquete")`. En particular, para el paquete `base` (que siempre tienes), podemos ver que: 
+```{r echo=TRUE, message=TRUE}
+data(package = "base")
+```
+
+A la vista del mensaje, lo preguntaremos de esta manera:
+```{r echo=TRUE, message=TRUE}
+data(package = "datasets")
+```
+
+Y obtendrás una lista parecida a esta:
+
+objeto                                      | Descripción
+------------------------------------------- | ------------------------------------------------
+AirPassengers                               | Monthly Airline Passenger Numbers 1949-1960
+BJsales                                     | Sales Data with Leading Indicator
+BJsales.lead (BJsales)                      | Sales Data with Leading Indicator
+BOD                                         | Biochemical Oxygen Demand
+CO2                                         | Carbon Dioxide Uptake in Grass Plants
+ChickWeight                                 | Weight versus age of chicks on different diets
+... y muchos más                            | 
+
+Empezaremos usando un dataframe muy especial: el que creó [Ronald Aylmer Fisher](https://es.wikipedia.org/wiki/Ronald_Fisher) (sí, el Fisher de la F de Fisher-Snedecor) y que le dio fama mundial en 1936. Puedes saber los detalles de este dataset si tecleas `?iris` en la consola de R (o de RStudio). 
+
+Podemos ver las primeras filas de la tabla con: 
+```{r message=FALSE, results='hide'}
+head(iris)
+```
+
+````
+
+  Sepal.Length Sepal.Width Petal.Length Petal.Width Species
+1          5.1         3.5          1.4         0.2  setosa
+2          4.9         3.0          1.4         0.2  setosa
+3          4.7         3.2          1.3         0.2  setosa
+4          4.6         3.1          1.5         0.2  setosa
+5          5.0         3.6          1.4         0.2  setosa
+6          5.4         3.9          1.7         0.4  setosa
+````
+
+Como esta salida es muy espartana, en este manual mostraremos una salida más "elegante" que hace más legible el resultado:
+
+```{r echo=TRUE, message=TRUE}
+head(iris)
+```
+
+Para saber el número de líneas del dataframe usaremos `nrow()`, y para saber el número de columnas `nrow()`. Para este dataset:
+```{r echo=TRUE, message=TRUE}
+nrow(iris)
+ncol(iris)
+```
+
+Esta tabla muestra las medidas en centímetros de las variables longitud y ancho del sépalo y largo y ancho del pétalo, respectivamente, para 50 flores de cada una de las tres especies de lirios (iris en inglés, pero [en latin se escribe igual](https://en.wiktionary.org/wiki/iris#Etymology)). Las tres especies son *iris setosa*, *iris versicolor* y *iris virginica*. 
+
+Este dataset hasta tiene [entrada en Wikipedia](https://es.wikipedia.org/wiki/Conjunto_de_datos_flor_iris), donde podéis ver las flores objeto del estudio y muchos más detalles. 
+
+Puedo saber si hay algún NA en el dataset usando 
+```{r echo=TRUE, message=TRUE}
+any(is.na(iris)) #any() indica si algún elemento de la matriz es TRUE
+```
+
+## Acceso a los valores
+
+Puedo acceder a cualquier de la columnas de dos formas: (1) indicado el nombre de la columna, o (2) indicando el índice de la columna.
+
+### Acceso por nombre de la columna
+```{r echo=TRUE, message=TRUE}
+mean(iris$Sepal.Length) #Valor medio de la columna Sepal.Length
+```
+
+### Acceso por índice de la columna
+```{r echo=TRUE, message=TRUE}
+mean(iris[ , 1]) # Observa notación [fila, col] y que fila está vacía (significa "todas").
+```
+
+### Acceso a una celda concreta
+
+Si queremos acceder al segundo elemento de la primera columna haremos:
+```{r echo=TRUE, message=TRUE}
+iris[2, 1] 
+```
+
+## Creando nuevas columnas
+Puedo crear una nueva columna en el dataset que sea el producto de las columnas 1 y 2. A esta nueva columna la llamaremos Sepal.Area. Haz esto :
+```{r echo=TRUE, message=TRUE}
+iris$Sepal.Area <-  iris$Sepal.Length * iris$Sepal.Width
+head(iris)
+```
+En la tabla verás una nueva columna, a la derecha, llamada Sepal.Area.
+
+## Las columnas de factores 
+La columna `Species` no contiene números, sino una __variable categórica__. Podemos ver qué valores toma con `table` aplicado a la columna:
+```{r echo=TRUE, message=TRUE}
+table(iris$Species)
+```
+
+Vemos que la variable toma solo tres valores, y que cada una de ellos ocurre 50 veces. Si vemos el tipo de los datos de esta columna veremos que es de tipo `factor`.
+```{r echo=TRUE, message=TRUE}
+class(iris$Species)
+```
+
+Un factor es un número, y se usa para evitar repetir cadenas de caracteres y ahorrar espacio en memoria.
+Puedo hacer comparación de factores. Por ejemplo, ¿son la misma especie el elemento 1 y el elemento 2?
+```{r echo=TRUE, message=TRUE}
+iris$Species[1] == iris$Species[2]
+```
+Puedes ver en la tabla que ambas son `setosa`.
+
+¿Son la misma especie el elemento 1 y el elemento 150?
+```{r echo=TRUE, message=TRUE}
+iris$Species[1] == iris$Species[150]
+```
+¿Cuál es la especia del elemento 150?
+```{r echo=TRUE, message=TRUE}
+iris$Species[150]
+```
+
+Los **levels** son los valores que puede tomar la variable categórica. Para obtener las cadenas de un vector de factores puedes usar `as.character(variableFactor)`. Por ejemplo:
+```{r echo=TRUE, message=TRUE}
+as.character(iris$Species)[1] #Convierto los factores a cadenas y muestro la primera
+```
+Observa las comillas que indican que es una cadena. Puedes ver su tipo con `class`:
+```{r echo=TRUE, message=TRUE}
+class(as.character(iris$Species)[1]) 
+```
 
 # Leyendo ficheros
+
+Ya sabéis que `getwd()` devuelve el directorio de trabajo, y que `setwd(pathElQueSea)` asigna un directorio (path) de trabajo.
+
+Para leer un fichero csv (del inglés **comma separated values**, es decir, valores separador por comas) podeís usar `read.csv(nombreDefichero)`.
+
+__¡OJO!__ Desafortunadamente, el path depende del sistema operativo. 
+
+## En Windows
+En Windows hay que indicar el nombre de la unidad (por ejemplo, C:) y el separador de directorios es `\`. Por ejemplo, en Windows podemos tener este path "F:\\research\\bio\\assay". Pero hay un detalle adicional: En R, el carácter `\` es un carácter especial (usado para indicar caracteres especiales como \\n), por lo que hay que "escapar" el carácter `\`. Esto se hace usando `\\`. Por tanto el path se indicará con la cadena "F:\\\\research\\\\bio\\\\assay".
+```{r echo=TRUE, message=TRUE, eval=FALSE}
+df <- read.csv("F:\\research\\bio\\assay.csv") #Indicamos path y fichero      
+```
+
+Alternativamente, podéis usar el directorio de trabajo:
+```{r echo=TRUE, message=TRUE, eval=FALSE}
+setwd("F:\\research\\bio")  #Asignamos el path
+df <- read.csv("assay.csv") #Indicamos solo fichero      
+```
+
+
+## En Unix (Variantes de GNU Unix como Ubuntu o iOS)
+En lugar de decir Unix (marca registrada), diremos "linux" cuando nos queramso referir a derivados de GNU Unix, tales como Linux, Ubuntu, etc. En linux tenemos este path "/home/pepe/research/bio/". Nota que, a diferencia de Windows, no se indica unidad y las barras son "a derecha" (en Windows son "a izquierda"). 
+
+```{r echo=TRUE, message=TRUE, eval=FALSE}
+df <- read.csv("/home/pepe/research/bio/assay.csv") #Indicamos path y fichero      
+```
+
+Alternativamente, podéis usar el directorio de trabajo:
+```{r echo=TRUE, message=TRUE, eval=FALSE}
+setwd("/home/pepe/research/bio/")  #Asignamos el path
+df <- read.csv("assay.csv")        #Indicamos solo fichero      
+```
+
+Podeís ver que la función `read.csv()` tiene varios parámetros. Son particularmente importantes: `header` (por defecto a TRUE) para indicar si el fichero tiene una línea de cabecera (típicamente con los nombres de las columnas), y `dec` (por defecto a ".") para indicar el carácter del punto decimal.
+
+## Un ejemplo
+En mi directorio de trabajo tengo el fichero `test.csv`, que cargo con
+```{r echo=TRUE, message=TRUE, eval=FALSE}
+df <- read.csv("test.csv") #Tiene cabecera y usa "." como separador de decimales.   
+head(df)
+```
+La primera columna, que no tenía nombre, ha sido nombrada como "X". Son variables categóricas las columnas `name`, `Sex`, y `Nation`.
+
+
+# Usando t-student y $\chi^2$ (chi-cuadrado)
+
+Vamos a ressolver algunos de los ejercicios de clase usando R.
+
+## Muestra pequeña, calcular $\mu$ si no conocemos $\sigma$.
+El enunciado del ejercicio era:
+
+_Las velocidades de 8 proyectiles se muestran a continuación. Encuentre un intervalo de 95% de confianza para el valor medio de la velocidad de los proyectiles. Puede suponer que las velocidades siguen una distribución aproximadamente normal._
+Los valores son estos:
+```{r echo=TRUE, message=TRUE}
+valores <- c(3005, 2925, 2935, 2965, 2995, 3005, 2937, 2905)
+```
+
+La media y la cuasivarianza son:
+```{r echo=TRUE, message=TRUE}
+media <- mean(valores)
+media
+s <- sqrt(var(valores))
+s
+```
+
+De teoría sabemos que:
+
+$\mu = \bar{x} \pm t_{n-1,\alpha/2}\cdot s/\sqrt{n} = 2959\pm t_{7;0.025}\cdot 39.08964/\sqrt{8}$.
+
+Para calcular $t_{7;0.025}$ en R hacemos `qt(0.025, 7,lower.tail = F)`, que tiene por valor 
+```{r echo=TRUE, message=TRUE}
+qt(0.025, 7,lower.tail = F)
+```
+
+De donde obtenemos:
+```{r echo=TRUE, message=TRUE}
+std_err = qt(0.025, 7,lower.tail = F) * s/sqrt(8)
+std_err
+```
+
+Y el resultado es:
+
+$\mu =  2959 \pm 32.67976$
+
+## Muestra pequeña, calcular $\sigma^2$ si no conocemos $\mu$.
+El enunciado del ejercicio era:
+
+_Se toman 3 medidas independientes de una fuente de sonido (mostradas a continuación). Calcule con una confianza del 90% el valor de la varianza. Asuma normalidad en las mediciones._
+Los valores son estos:
+```{r echo=TRUE, message=TRUE}
+valores <- c(4.1, 5.2, 10.2)
+```
+
+La $\sigma^2$ es:
+```{r echo=TRUE, message=TRUE}
+s2 <- var(valores)
+s2
+```
+
+De teoría sabemos que elintervalo será:
+
+$\left( \frac{(n-1)s^2}{\chi_{n-1;\alpha/2}^2}, \frac{n-1)s^2}{\chi_{n-1; 1-\alpha/2}^2} \right)$.
+
+Por tanto:
+
+$\left( \frac{(2)10.57}{\chi_{2;0.05}^2}, \frac{2)10.57}{\chi_{2; 0.95}^2} \right)$.
+
+Para calcular $\chi_{2;0.05}$ en R hacemos `qchisq(0.05, 2, lower.tail=FALSE)`, que tiene por valor 
+```{r echo=TRUE, message=TRUE}
+qchisq(0.05, 2, lower.tail=FALSE)
+```
+
+Para calcular $\chi_{2;0.95}$ en R hacemos `qchisq(0.95, 2, lower.tail=FALSE)`, que tiene por valor 
+```{r echo=TRUE, message=TRUE}
+qchisq(0.95, 2, lower.tail=FALSE)
+```
+
+Calculo `xl` y `xu`:
+```{r echo=TRUE, message=TRUE}
+xl <- 2*s2/qchisq(0.05, 2, lower.tail=FALSE)
+xl
+xu <- 2*s2/qchisq(0.95, 2, lower.tail=FALSE)
+xu
+```
+
+
+Y el resultado es:
+
+```{r echo=TRUE, message=TRUE}
+cat ('IC = (', xl, ', ', xu, ')')  
+```
 
